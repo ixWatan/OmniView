@@ -1,0 +1,79 @@
+conky.config = {
+	background = true,
+	double_buffer = true,
+	alignment = 'middle_left',
+	border_width = 1,
+	cpu_avg_samples = 2,
+	default_color = 'white',
+	default_outline_color = 'white',
+	default_shade_color = 'white',
+	draw_borders = false,
+	draw_graph_borders = true,
+	draw_outline = false,
+	draw_shades = false,
+	gap_x = 100,
+	gap_y = 0,
+	net_avg_samples = 2,
+	no_buffers = true,
+	out_to_console = false,
+	out_to_stderr = false,
+	extra_newline = false,
+	own_window = true,
+	own_window_type = 'normal',
+	own_window_transparent = true,
+	own_window_colour = 'FFA348',
+	own_window_argb_visual = false,
+	own_window_argb_value = 51,
+	own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
+	minimum_width = 300, minimum_height = 400,
+	stippled_borders = 0,
+	update_interval = 1.0,
+	uppercase = false,
+	use_spacer = 'none',
+	show_graph_scale = false,
+	show_graph_range = false,
+	use_xft = true,
+	xftalpha = 0.1,
+	font = 'Droid Sans:size=10',
+	override_utf8_locale = true,
+	color0 = 'white',
+	color1 = '#0f74bd', -- Blue Color for fixed names (GPU, CPU, RAM ...)
+	color2 = '#95bdf5', -- Light blue for usage bar
+};
+
+conky.text = [[
+${color1}GPU: ${alignr}${color0}${execi 60 nvidia-smi --query-gpu=name --format=csv,noheader}
+${color1}GPU Temp ${alignr}${color0}${nvidia temp} °C
+${color1}Fan Speed ${alignr}${color0}${execi 5 nvidia-settings -q [fan:0]/GPUCurrentFanSpeedRPM -t | sed 's/^[ \t]*//;s/[ \t]*$//'}${if_match "${execi 5 nvidia-settings -q [fan:0]/GPUCurrentFanSpeedRPM -t | sed 's/^[ \t]*//;s/[ \t]*$//'}" == ""}${execi 5 nvidia-settings -q [fan:0]/GPUCurrentFanSpeed -t} %${else} RPM${endif}
+${color1}GPU Usage ${alignr}${color0}${execi 1 nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits} %
+${color1}GPU Clock ${alignr}${color0}${nvidia gpufreq} MHz
+${color1}Mem Clock ${alignr}${color0}${nvidia memfreq} MHz
+${color1}VRAM ${alignr}${color0}${execi 5 nvidia-settings -q [gpu:0]/UsedDedicatedGPUMemory -t} / ${exec nvidia-settings -q [gpu:0]/TotalDedicatedGPUMemory -t} MB
+
+${voffset 10}
+${color1}CPU ${color0}${alignr}${exec lscpu | grep 'Model name' | sed 's/Model name:\s*//'}
+${color0}Usage${color0}${alignr}${cpu cpu0}%
+${color2}${cpubar cpu0 5,}
+${color0}${top name 1} $alignr ${top cpu 1}%
+${top name 2} $alignr ${top cpu 2}%
+${top name 3} $alignr ${top cpu 3}%
+${top name 4} $alignr ${top cpu 4}%
+${top name 5} $alignr ${top cpu 5}%
+
+${color1}RAM${alignr}${color0}${execi 60 free -g | awk '/^Mem:/ {print $2 " GB"}'}
+${color0}Usage${color0}${alignr}${mem}
+${color2}${membar 5,}
+${color0}${top_mem name 1} $alignr ${top_mem mem_res 1}
+${top_mem name 2} $alignr ${top_mem mem_res 2}
+${top_mem name 3} $alignr ${top_mem mem_res 3}
+${top_mem name 4} $alignr ${top_mem mem_res 4}
+${top_mem name 5} $alignr ${top_mem mem_res 5}
+${voffset 10}
+${color1}Download ${color0}${alignr}${downspeedf eno1} KiB/s
+${downspeedgraph eno1 80,}
+${color1}Upload ${color0}${alignr}${upspeedf eno1} KiB/s
+${upspeedgraph eno1 80,}
+${color1}Local IP${color0}${alignr}${addrs eno1}
+${color1}Public IP${color0}${alignr}${execi 3600 wget -q -O - http://checkip.dyndns.org/ | cut -d : -f 2- | cut -d \< -f -1}
+]]
+
